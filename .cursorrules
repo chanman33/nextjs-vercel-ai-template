@@ -1,0 +1,70 @@
+# Cursor Rules: Prisma Schema Management with Supabase Client
+
+## Database Management Approach
+
+This project uses a hybrid approach for database management:
+- Prisma is used ONLY for schema definition and migrations
+- Supabase client is used for ALL database operations
+- NO Prisma Client generation or usage
+
+## Rules for Database Schema Changes
+
+1. All schema changes MUST be made in the Prisma schema file (`prisma/schema.prisma`)
+2. After schema changes, run `npx prisma migrate dev --name descriptive_name` to create migrations
+3. NEVER use `prisma generate` or import `PrismaClient` in the codebase
+4. Keep TypeScript types in sync with the database schema manually
+
+## Rules for Database Operations
+
+1. ALL database operations MUST use the Supabase client
+2. Import the Supabase client from the central utility file: `import { supabase } from '@/lib/supabase'`
+3. Use TypeScript types that match your schema for type safety
+4. Handle errors from Supabase operations appropriately
+
+## Environment Variables
+
+1. Use `DATABASE_URL` for Prisma migrations pointing to Supabase PostgreSQL
+2. Use `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` for Supabase client
+3. NEVER commit actual credentials to the repository
+
+## Workflow Example
+
+```bash
+# 1. Update schema in prisma/schema.prisma
+# 2. Create migration
+npx prisma migrate dev --name add_new_field
+
+# 3. Update TypeScript types to match new schema
+# 4. Use Supabase client for database operations
+```
+
+## Code Example
+
+```typescript
+// DON'T DO THIS:
+// import { PrismaClient } from '@prisma/client'
+// const prisma = new PrismaClient()
+
+// DO THIS:
+import { supabase } from '@/lib/supabase'
+
+// Define types matching your schema
+type User = {
+  id: string
+  email: string
+  name: string | null
+}
+
+// Use Supabase client for operations
+async function getUsers() {
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+  
+  if (error) {
+    console.error('Error fetching users:', error)
+    return null
+  }
+  
+  return data as User[]
+} 
