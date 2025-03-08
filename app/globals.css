@@ -81,13 +81,13 @@
   }
 
   * {
-    @apply border-border;
+    @apply border-[1px] border-solid border-[hsl(var(--border))];
   }
   
   body {
     background: var(--background-color);
     color: var(--foreground-color);
     font-family: Arial, Helvetica, sans-serif;
-    @apply bg-background text-foreground;
+    @apply bg-[hsl(var(--background))] text-[hsl(var(--foreground))];
   }
 }
